@@ -42,7 +42,7 @@
 
         /* Estilos para la animación del texto con gradiente */
         .animated-gradient-text {
-            background: linear-gradient(45deg, #f3ec78, #af4261, #53354a, #9f5f80);
+            background: linear-gradient(45deg, #2563EB, #5B21B6, #0891B2, #4C51BF);
             background-size: 300% 300%;
             -webkit-background-clip: text;
             background-clip: text;
@@ -60,35 +60,81 @@
 </head>
 <body class="text-white">
 
-    <!-- Canvas para la animación abstracta -->
+    <!-- Canvas para la nueva animación de partículas -->
     <canvas id="particle-canvas"></canvas>
 
     <div class="min-h-screen flex flex-col items-center justify-center p-6 relative z-10">
         
         <main class="text-center fade-in">
-            <!-- Título principal con animación de gradiente -->
-            <h1 class="text-5xl md:text-8xl font-bold tracking-wider mb-4 uppercase animated-gradient-text">
+            <!-- Título principal con animación de gradiente y texto responsivo -->
+            <h1 class="text-4xl sm:text-6xl lg:text-8xl font-bold tracking-wider mb-8 uppercase animated-gradient-text">
                 Próximamente
             </h1>
+
+            <!-- Contenedor de la cuenta regresiva -->
+            <div id="countdown" class="flex justify-center space-x-4 sm:space-x-8 text-center">
+                <div>
+                    <span id="days" class="text-4xl sm:text-5xl font-bold">00</span>
+                    <span class="block text-xs sm:text-sm uppercase tracking-widest">Días</span>
+                </div>
+                <div>
+                    <span id="hours" class="text-4xl sm:text-5xl font-bold">00</span>
+                    <span class="block text-xs sm:text-sm uppercase tracking-widest">Horas</span>
+                </div>
+                <div>
+                    <span id="minutes" class="text-4xl sm:text-5xl font-bold">00</span>
+                    <span class="block text-xs sm:text-sm uppercase tracking-widest">Minutos</span>
+                </div>
+                <div>
+                    <span id="seconds" class="text-4xl sm:text-5xl font-bold">00</span>
+                    <span class="block text-xs sm:text-sm uppercase tracking-widest">Segundos</span>
+                </div>
+            </div>
         </main>
         
     </div>
 
     <script>
+        // --- Script para la cuenta regresiva ---
+        const countdownElement = document.getElementById('countdown');
+        // ¡IMPORTANTE! Cambia esta fecha a la fecha de tu lanzamiento. Formato: Mes Dia, Año HH:MM:SS
+        const launchDate = new Date('Oct 1, 2025 00:00:00').getTime();
+
+        const updateCountdown = setInterval(function() {
+            const now = new Date().getTime();
+            const distance = launchDate - now;
+
+            if (distance < 0) {
+                clearInterval(updateCountdown);
+                countdownElement.innerHTML = '<div class="text-2xl font-bold w-full">¡Ya estamos en línea!</div>';
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById('days').innerText = String(days).padStart(2, '0');
+            document.getElementById('hours').innerText = String(hours).padStart(2, '0');
+            document.getElementById('minutes').innerText = String(minutes).padStart(2, '0');
+            document.getElementById('seconds').innerText = String(seconds).padStart(2, '0');
+
+        }, 1000);
+
+
+        // --- Script para la animación sutil de partículas ---
         const canvas = document.getElementById('particle-canvas');
         const ctx = canvas.getContext('2d');
-
         let particlesArray;
 
-        // Ajustar tamaño del canvas a la ventana
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            init(); // Reiniciar partículas al cambiar tamaño para que se vea bien
+            initParticles();
         }
         window.addEventListener('resize', resizeCanvas);
 
-        // Crear partícula
         class Particle {
             constructor(x, y, directionX, directionY, size, color) {
                 this.x = x;
@@ -98,54 +144,45 @@
                 this.size = size;
                 this.color = color;
             }
-            // Método para dibujar la partícula
             draw() {
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
                 ctx.fillStyle = this.color;
                 ctx.fill();
             }
-            // Método para actualizar la posición de la partícula
             update() {
-                if (this.x > canvas.width || this.x < 0) {
-                    this.directionX = -this.directionX;
-                }
-                if (this.y > canvas.height || this.y < 0) {
-                    this.directionY = -this.directionY;
-                }
+                if (this.x > canvas.width || this.x < 0) this.directionX = -this.directionX;
+                if (this.y > canvas.height || this.y < 0) this.directionY = -this.directionY;
                 this.x += this.directionX;
                 this.y += this.directionY;
                 this.draw();
             }
         }
 
-        // Crear array de partículas
-        function init() {
+        function initParticles() {
             particlesArray = [];
-            let numberOfParticles = (canvas.height * canvas.width) / 9000;
+            let numberOfParticles = (canvas.height * canvas.width) / 12000;
             for (let i = 0; i < numberOfParticles; i++) {
-                let size = (Math.random() * 2) + 1;
+                let size = (Math.random() * 1.5) + 0.5;
                 let x = (Math.random() * ((innerWidth - size * 2) - (size * 2)) + size * 2);
                 let y = (Math.random() * ((innerHeight - size * 2) - (size * 2)) + size * 2);
-                let directionX = (Math.random() * .4) - .2;
-                let directionY = (Math.random() * .4) - .2;
-                let color = 'rgba(255, 255, 255, 0.5)';
-
+                let directionX = (Math.random() * 0.4) - 0.2; // Movimiento más lento
+                let directionY = (Math.random() * 0.4) - 0.2; // Movimiento más lento
+                let color = 'rgba(255, 255, 255, 0.3)'; // Color más tenue
                 particlesArray.push(new Particle(x, y, directionX, directionY, size, color));
             }
         }
 
-        // Conectar partículas cercanas con una línea
-        function connect() {
+        function connectParticles() {
             let opacityValue = 1;
             for (let a = 0; a < particlesArray.length; a++) {
                 for (let b = a; b < particlesArray.length; b++) {
                     let distance = ((particlesArray[a].x - particlesArray[b].x) * (particlesArray[a].x - particlesArray[b].x))
                         + ((particlesArray[a].y - particlesArray[b].y) * (particlesArray[a].y - particlesArray[b].y));
-                    if (distance < (canvas.width / 7) * (canvas.height / 7)) {
-                        opacityValue = 1 - (distance / 20000);
-                        ctx.strokeStyle = 'rgba(255,255,255,' + opacityValue + ')';
-                        ctx.lineWidth = 1;
+                    if (distance < (canvas.width / 8) * (canvas.height / 8)) {
+                        opacityValue = 1 - (distance / 25000); // Ajuste para que las líneas sean más tenues
+                        ctx.strokeStyle = 'rgba(255, 255, 255,' + opacityValue + ')';
+                        ctx.lineWidth = 0.5;
                         ctx.beginPath();
                         ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
                         ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
@@ -155,18 +192,15 @@
             }
         }
 
-        // Bucle de animación
         function animate() {
             requestAnimationFrame(animate);
             ctx.clearRect(0, 0, innerWidth, innerHeight);
-
             for (let i = 0; i < particlesArray.length; i++) {
                 particlesArray[i].update();
             }
-            connect();
+            connectParticles();
         }
-        
-        // Iniciar todo
+
         resizeCanvas();
         animate();
     </script>
